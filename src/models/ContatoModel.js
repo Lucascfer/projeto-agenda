@@ -17,15 +17,21 @@ function Contato(body) {
   this.contato = null;
 }
 
-Contato.prototype.register = async () => {
+Contato.buscaPorId = async function(id) {
+  if (typeof id !== 'string') return
+  const user = await ContatoModel.findById(id)
+  return user
+}
+
+Contato.prototype.register = async function() {
   this.valida()
 
   if(this.errors.length > 0) return
 
-  
+  this.contato = await ContatoModel.create(this.body)
 }
 
-Contato.prototype.valida() = () => {
+Contato.prototype.valida = function() {
   this.cleanUp()
 
   if (this.body.email && !validator.isEmail(this.body.email)) this.errors.push('Email inválido')
@@ -35,19 +41,21 @@ Contato.prototype.valida() = () => {
   }
 }
 
-Contato.prototype.cleanUp() =  () => {
+Contato.prototype.cleanUp =  function() { 
   for (const key in this.body) {
     if (typeof this.body[key] !== 'string') {
       this.body[key] = ''
+    } else {
+        this.body[key] = this.body[key].trim()
     }
   }
+}
 
-  this.body = {
-    nome: this.body.nome,
-    sobrenome: this.body.sobrenome,
-    email: this.body.email,
-    telefone: this.body.telefone,
-  }
+Contato.prototype.edit = async function(id) {
+  if(typeof id !== 'string') return
+  this.valida()
+  if(this.errors.length > 0) return
+  this.contato = await ContatoModel.findByIdAndUpdate(id, this.body, { new: true})
 }
 
 module.exports = Contato;
